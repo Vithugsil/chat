@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS message (
+  message_id INT AUTO_INCREMENT PRIMARY KEY,
+  message TEXT NOT NULL,
+  user_id_send INT NOT NULL,
+  user_id_receive INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

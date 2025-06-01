@@ -1,0 +1,75 @@
+services:
+  # 1) MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-chat
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: chatdb
+      MYSQL_USER: chatuser
+      MYSQL_PASSWORD: chatpass
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-init/:/docker-entrypoint-initdb.d
+    networks:
+      - chat-net
+
+  # 2) Redis
+  redis:
+    image: redis:7-alpine
+    container_name: redis-chat
+    ports:
+      - "6379:6379"
+    networks:
+      - chat-net
+
+  # 3) Auth-API (PHP)
+  auth-api:
+    build:
+      context: ./auth-api
+    container_name: auth-api-php
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - chat-net
+
+  # 4) Record-API (Python)
+  record-api:
+    build:
+      context: ./record-api
+    container_name: record-api-py
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./record-api:/app
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - chat-net
+
+  # 5) Receive-Send-API (NodeJS)
+  receive-send-api:
+    build:
+      context: ./receive-send-api
+    container_name: receive-send-api-node
+    ports:
+      - "8002:8002"
+    depends_on:
+      - auth-api
+      - record-api
+      - redis
+    networks:
+      - chat-net
+
+volumes:
+  mysql-data:
+
+networks:
+  chat-net:
+    driver: bridge
