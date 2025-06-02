@@ -9,3 +9,5 @@ router.get("/health", async (req, res) => {
     res.status(500).json({ status: "error", message: "Service is down" });
   }
 });
+
+module.exports = router;
