@@ -13,7 +13,7 @@ class JwtHelper
             'userId' => $userId,
             'password' => $password,
             'iat' => time(),
-            'exp' => time() + 3600 // validade de 24h (ajuste conforme necessidade)
+            'exp' => time() + 3600 
         ];
         return JWT::encode($payload, Config::JWT_SECRET, 'HS256');
     }

@@ -3,16 +3,16 @@ const bodyParser = require("body-parser");
 const MessageController = require("./controller/MessageController");
 const WorkerController = require("./controller/WorkerController");
 const ReadController = require("./controller/ReadController");
+const HealthController = require("./controller/HealthController");
 
 const app = express();
 app.use(bodyParser.json());
 
-// Rotas
 app.use("/", MessageController);
 app.use("/", WorkerController);
 app.use("/", ReadController);
+app.use("/", HealthController);
 
-// Inicia servidor
 const PORT = 8002;
 app.listen(PORT, () => {
   console.log(`Receive-Send-API rodando na porta ${PORT}`);

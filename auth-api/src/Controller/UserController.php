@@ -14,13 +14,15 @@ class UserController
         $this->userModel = new UserModel();
     }
 
-    /**
-     * POST /user
-     * Body: { name, lastName, email, password }
-     * Retorna { message: 'ok', user: {...} } ou erro
-     */
     public function create(Request $request, Response $response, $args)
     {
+
+        $body = (string) $request->getBody();
+        error_log("Request body: $body"); // Log the request body for debugging
+
+        $data2 = json_decode($body, true);
+        error_log("Decoded data: " . print_r($data2, true)); // Log the decoded data for debugging
+
         $data = json_decode((string) $request->getBody(), true);
         $name = $data['name'] ?? '';
         $lastName = $data['lastName'] ?? '';
@@ -33,9 +35,19 @@ class UserController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        $ok = $this->userModel->createUser($name, $lastName, $email, $password);
-        if (!$ok) {
-            $resp = json_encode(['message' => 'erro ao criar usuário']);
+        try {
+            $ok = $this->userModel->createUser($name, $lastName, $email, $password);
+            if (!$ok) {
+                $resp = json_encode(['message' => 'erro ao criar usuário']);
+                $response->getBody()->write($resp);
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (\InvalidArgumentException $e) {
+            $resp = json_encode(['message' => $e->getMessage()]);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        } catch (\Exception $e) {
+            $resp = json_encode(['message' => 'erro interno no servidor']);
             $response->getBody()->write($resp);
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
@@ -46,17 +58,14 @@ class UserController
                 'name' => $name,
                 'lastName' => $lastName,
                 'email' => $email,
-                'password' => $password // Em geral não retorna a senha, mas respeitando o enunciado
+                'password' => $password
             ]
         ]);
         $response->getBody()->write($resp);
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
 
-    /**
-     * GET /user?email=<email>
-     * Retorna { name, lastName, email, password } ou {}
-     */
+
     public function getByEmail(Request $request, Response $response, $args)
     {
         $query = $request->getQueryParams();
@@ -74,7 +83,6 @@ class UserController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
 
-        // Retorna os campos conforme enunciado
         $resp = json_encode([
             'name' => $user['name'],
             'lastName' => $user['lastName'],

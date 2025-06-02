@@ -14,8 +14,8 @@ class UserModel
         while ($attempts < $maxRetries) {
             try {
                 $dsn = 'mysql:host=' . Config::DB_HOST
-                     . ';port=' . Config::DB_PORT
-                     . ';dbname=' . Config::DB_NAME;
+                    . ';port=' . Config::DB_PORT
+                    . ';dbname=' . Config::DB_NAME;
 
                 $this->pdo = new PDO(
                     $dsn,
@@ -40,16 +40,21 @@ class UserModel
 
     public function createUser(string $name, string $lastName, string $email, string $password): bool
     {
+        if ($this->getUserByEmail($email) !== null) {
+            throw new \InvalidArgumentException("Email já cadastrado: {$email}");
+        }
+
         $sql = "INSERT INTO user (name, last_name, email, password) 
-                VALUES (:name, :lastName, :email, :password)";
+            VALUES (:name, :lastName, :email, :password)";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
-            ':name'     => $name,
+            ':name' => $name,
             ':lastName' => $lastName,
-            ':email'    => $email,
+            ':email' => $email,
             ':password' => password_hash($password, PASSWORD_BCRYPT)
         ]);
     }
+
 
     public function getUserByEmail(string $email): ?array
     {
@@ -71,9 +76,6 @@ class UserModel
         return $user ?: null;
     }
 
-    /**
-     * Retorna todos os usuários (id, name, lastName, email).
-     */
     public function getAllUsers(): array
     {
         $sql = "SELECT user_id AS id, name, last_name AS lastName, email FROM user";

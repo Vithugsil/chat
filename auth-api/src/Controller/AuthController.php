@@ -14,11 +14,6 @@ class AuthController
         $this->authService = new AuthService();
     }
 
-    /**
-     * POST /token
-     * Body: { "email": "...", "password": "..." }
-     * Retorna { token: "JWT" } ou { token: false }
-     */
     public function login(Request $request, Response $response, $args)
     {
         $data = json_decode((string) $request->getBody(), true);
@@ -37,11 +32,6 @@ class AuthController
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    /**
-     * GET /token?user=<userId>
-     * Header: { Authorization: "<jwt>" }
-     * Retorna { auth: true/false }
-     */
     public function validate(Request $request, Response $response, $args)
     {
         $query = $request->getQueryParams();
