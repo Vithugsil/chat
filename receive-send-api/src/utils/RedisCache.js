@@ -1,11 +1,11 @@
-const Redis = require('ioredis');
+const Redis = require("ioredis");
 
 class RedisCache {
   constructor() {
     if (!RedisCache.instance) {
       RedisCache.instance = new Redis({
-        host: 'redis',
-        port: 6379
+        host: process.env.Redis_Host || "redis",
+        port: process.env.Redis_port || 6379,
       });
     }
     this.client = RedisCache.instance;
@@ -16,7 +16,6 @@ class RedisCache {
   }
 
   async set(key, value, ttlSeconds = 60) {
-    // ttl em segundos
     return await this.client.setex(key, ttlSeconds, value);
   }
 }

@@ -12,15 +12,12 @@ router.post("/message/worker", async (req, res) => {
   console.log("POST /message/worker called");
   const token = req.header("Authorization") || "";
   const { userIdSend, userIdReceive } = req.body;
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
 
   if (!token || !userIdSend || !userIdReceive) {
     console.log("Missing data:", { token, userIdSend, userIdReceive });
     return res.status(400).json({ msg: "dados insuficientes" });
   }
 
-  console.log("Validating token for user:", userIdSend);
   const isAuth = await authService.isUserAuthenticated(userIdSend, token);
   if (!isAuth) {
     console.log("Authentication failed for user:", userIdSend);
@@ -28,9 +25,7 @@ router.post("/message/worker", async (req, res) => {
   }
 
   const channelKey = `${userIdSend}:${userIdReceive}`;
-  console.log("Draining queue for channel:", channelKey);
   const mensagens = await queueService.drainQueue(channelKey);
-  console.log("Messages drained:", mensagens);
 
   for (let msg of mensagens) {
     console.log("Saving message to history:", msg);

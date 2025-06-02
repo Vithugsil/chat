@@ -9,13 +9,10 @@ class AuthService {
 
   async isUserAuthenticated(userId, token) {
     const cacheKey = `authok:${userId}:${token}`;
-    console.log(`Checking auth for user ${userId} with token ${token}`);
     const cached = await this.cache.get(cacheKey);
-    console.log(`Cached auth for user ${userId}:`, cached);
     if (cached !== null) {
       return cached === "1";
     }
-    console.log(`Cache miss for user ${userId}, fetching from auth API...`);
     try {
       const url = `${this.baseUrl}/token?user=${userId}`;
       const headers = { Authorization: token };

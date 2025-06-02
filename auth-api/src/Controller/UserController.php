@@ -28,9 +28,19 @@ class UserController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
         }
 
-        $ok = $this->userModel->createUser($name, $lastName, $email, $password);
-        if (!$ok) {
-            $resp = json_encode(['message' => 'erro ao criar usuário']);
+        try {
+            $ok = $this->userModel->createUser($name, $lastName, $email, $password);
+            if (!$ok) {
+                $resp = json_encode(['message' => 'erro ao criar usuário']);
+                $response->getBody()->write($resp);
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+        } catch (\InvalidArgumentException $e) {
+            $resp = json_encode(['message' => $e->getMessage()]);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        } catch (\Exception $e) {
+            $resp = json_encode(['message' => 'erro interno no servidor']);
             $response->getBody()->write($resp);
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
@@ -47,6 +57,7 @@ class UserController
         $response->getBody()->write($resp);
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
+
 
     public function getByEmail(Request $request, Response $response, $args)
     {

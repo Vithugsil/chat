@@ -4,8 +4,8 @@ class RedisQueueService {
   constructor() {
     if (!RedisQueueService.instance) {
       RedisQueueService.instance = new Redis({
-        host: "redis",
-        port: 6379,
+        host: process.env.Redis_Host || "redis",
+        port: process.env.Redis_port || 6379,
       });
     }
     this.client = RedisQueueService.instance;

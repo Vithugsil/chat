@@ -1,5 +1,4 @@
 services:
-  # 1) MySQL
   mysql:
     image: mysql:8.0
     container_name: mysql-chat
@@ -16,7 +15,6 @@ services:
     networks:
       - chat-net
 
-  # 2) Redis
   redis:
     image: redis:7-alpine
     container_name: redis-chat
@@ -25,7 +23,6 @@ services:
     networks:
       - chat-net
 
-  # 3) Auth-API (PHP)
   auth-api:
     build:
       context: ./auth-api
@@ -38,13 +35,15 @@ services:
     networks:
       - chat-net
 
-  # 4) Record-API (Python)
   record-api:
     build:
       context: ./record-api
     container_name: record-api-py
     ports:
       - "8001:8001"
+    environment:
+      Redis_Host: redis
+      Redis_Port: 6379
     volumes:
       - ./record-api:/app
     depends_on:
@@ -53,7 +52,6 @@ services:
     networks:
       - chat-net
 
-  # 5) Receive-Send-API (NodeJS)
   receive-send-api:
     build:
       context: ./receive-send-api

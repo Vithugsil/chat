@@ -62,7 +62,6 @@ class AuthService
             return json_decode($cached, true);
         }
 
-        // Usa diretamente o método do model
         $users = $this->userModel->getAllUsers();
         RedisCache::set($cacheKey, json_encode($users), 300);
         return $users;
