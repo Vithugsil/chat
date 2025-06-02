@@ -71,9 +71,6 @@ class UserModel
         return $user ?: null;
     }
 
-    /**
-     * Retorna todos os usuários (id, name, lastName, email).
-     */
     public function getAllUsers(): array
     {
         $sql = "SELECT user_id AS id, name, last_name AS lastName, email FROM user";

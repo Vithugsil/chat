@@ -14,11 +14,6 @@ class UserController
         $this->userModel = new UserModel();
     }
 
-    /**
-     * POST /user
-     * Body: { name, lastName, email, password }
-     * Retorna { message: 'ok', user: {...} } ou erro
-     */
     public function create(Request $request, Response $response, $args)
     {
         $data = json_decode((string) $request->getBody(), true);
@@ -46,17 +41,13 @@ class UserController
                 'name' => $name,
                 'lastName' => $lastName,
                 'email' => $email,
-                'password' => $password // Em geral não retorna a senha, mas respeitando o enunciado
+                'password' => $password
             ]
         ]);
         $response->getBody()->write($resp);
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
 
-    /**
-     * GET /user?email=<email>
-     * Retorna { name, lastName, email, password } ou {}
-     */
     public function getByEmail(Request $request, Response $response, $args)
     {
         $query = $request->getQueryParams();
@@ -74,7 +65,6 @@ class UserController
             return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
         }
 
-        // Retorna os campos conforme enunciado
         $resp = json_encode([
             'name' => $user['name'],
             'lastName' => $user['lastName'],

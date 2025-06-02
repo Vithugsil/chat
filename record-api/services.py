@@ -7,20 +7,29 @@ class MessageService:
         self.model = MessageModel()
 
     def create_message(self, user_id_send: int, user_id_receive: int, message: str) -> bool:
-        # Insere no banco
         return self.model.insert_message(user_id_send, user_id_receive, message)
 
-    def get_messages(self, user_id_send: int, user_id_receive: int) -> list:
-        # Monta canal
-        channel = f"{user_id_send}{user_id_receive}"
-        cache_key = f"msg_channel:{channel}"
+    def get_messages_by_user_id_send(self, user_id_send: int) -> list:
+        cache_key = f"msg_sender:{user_id_send}"
         cached = RedisCache.get(cache_key)
         if cached:
             return json.loads(cached)
 
-        print(channel)
-        # Não em cache → busca no DB
-        msgs = self.model.get_messages_by_channel(channel)
-        # Cache por 30s
+        msgs = self.model.get_messages_by_user_id_send(user_id_send)
+
         RedisCache.set(cache_key, json.dumps(msgs), 30)
         return msgs
+    
+    def helf_check(self) -> bool:
+        try:
+            # Check SQL connection
+            self.model.conn.ping(reconnect=True)
+
+            # Check Redis connection
+            RedisCache._redis.ping()
+
+            print("[MessageService] Health check passed")
+            return True
+        except Exception as e:
+            print(f"[MessageService] Health check failed: {e}")
+            return False

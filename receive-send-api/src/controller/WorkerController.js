@@ -1,48 +1,44 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const AuthService = require('../service/AuthService');
-const RedisQueueService = require('../service/RedisQueueService');
-const MessageService = require('../service/MessageService');
+const AuthService = require("../service/AuthService");
+const RedisQueueService = require("../service/RedisQueueService");
+const MessageService = require("../service/MessageService");
 
 const authService = new AuthService();
 const queueService = new RedisQueueService();
 const messageService = new MessageService();
 
-/**
- * POST /message/worker
- * Header: { Authorization: token }
- * Body: { userIdSend, userIdReceive }
- * Fluxo:
- *  1) Valida token + userIdSend via Auth-API
- *  2) Se não autenticado, retorna { msg: 'not auth' }
- *  3) Senão, drena toda a fila Redis do canal `${userIdSend}${userIdReceive}`
- *  4) Para cada mensagem, chama Record-API p/ gravar no histórico
- *  5) Retorna estrutura de mensagens salvas (ou msg:'ok')
- */
-router.post('/message/worker', async (req, res) => {
-  const token = req.header('Authorization') || '';
+router.post("/message/worker", async (req, res) => {
+  console.log("POST /message/worker called");
+  const token = req.header("Authorization") || "";
   const { userIdSend, userIdReceive } = req.body;
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
 
   if (!token || !userIdSend || !userIdReceive) {
-    return res.status(400).json({ msg: 'dados insuficientes' });
+    console.log("Missing data:", { token, userIdSend, userIdReceive });
+    return res.status(400).json({ msg: "dados insuficientes" });
   }
 
-  // 1) Valida token
+  console.log("Validating token for user:", userIdSend);
   const isAuth = await authService.isUserAuthenticated(userIdSend, token);
   if (!isAuth) {
-    return res.status(401).json({ msg: 'not auth' });
+    console.log("Authentication failed for user:", userIdSend);
+    return res.status(401).json({ msg: "not auth" });
   }
 
-  // 2) Drena fila
-  const channelKey = `${userIdSend}${userIdReceive}`;
+  const channelKey = `${userIdSend}:${userIdReceive}`;
+  console.log("Draining queue for channel:", channelKey);
   const mensagens = await queueService.drainQueue(channelKey);
+  console.log("Messages drained:", mensagens);
 
-  // 3) Para cada mensagem, salva no Record-API
   for (let msg of mensagens) {
+    console.log("Saving message to history:", msg);
     await messageService.saveToHistory(userIdSend, userIdReceive, msg);
   }
 
-  return res.json({ msg: 'ok', savedCount: mensagens.length });
+  console.log("All messages saved. Count:", mensagens.length);
+  return res.json({ msg: "ok", savedCount: mensagens.length });
 });
 
 module.exports = router;
