@@ -4,6 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use Slim\Factory\AppFactory;
 use App\Controller\AuthController;
 use App\Controller\UserController;
+use App\Controller\HealthController;
 
 $app = AppFactory::create();
 $app->addBodyParsingMiddleware();
@@ -13,6 +14,8 @@ $app->get('/token', [AuthController::class, 'validate']);
 
 $app->post('/user', [UserController::class, 'create']);
 $app->get('/user', [UserController::class, 'getByEmail']);
+
+$app->get('/health', [HealthController::class, 'check']); 
 
 $app->get('/allUsers', function ($req, $res, $args) {
     $svc = new \App\Service\AuthService();

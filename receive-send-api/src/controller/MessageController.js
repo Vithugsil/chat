@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const AuthService = require("../service/AuthService");
 const RedisQueueService = require("../service/RedisQueueService");
+const HttpClient = require("../utils/HttpClient");
 
 const authService = new AuthService();
 const queueService = new RedisQueueService();
@@ -16,7 +17,9 @@ router.post("/message", async (req, res) => {
 
   const isAuth = await authService.isUserAuthenticated(userIdSend, token);
 
-  console.log(`isAuth: ${isAuth}, userIdSend: ${userIdSend}, userIdReceive: ${userIdReceive}, message: ${message}`);
+  console.log(
+    `isAuth: ${isAuth}, userIdSend: ${userIdSend}, userIdReceive: ${userIdReceive}, message: ${message}`
+  );
 
   if (!isAuth) {
     return res.status(401).json({ msg: "not auth" });
@@ -24,6 +27,17 @@ router.post("/message", async (req, res) => {
 
   const channelKey = `${userIdSend}:${userIdReceive}`;
   await queueService.enqueue(channelKey, message);
+
+  await HttpClient.post(
+    "http://localhost:8002/message/worker",
+    {
+      userIdSend,
+      userIdReceive,
+    },
+    {
+      Authorization: token,
+    }
+  );
 
   return res.json({ message: "message sended with success" });
 });

@@ -16,6 +16,13 @@ class UserController
 
     public function create(Request $request, Response $response, $args)
     {
+
+        $body = (string) $request->getBody();
+        error_log("Request body: $body"); // Log the request body for debugging
+
+        $data2 = json_decode($body, true);
+        error_log("Decoded data: " . print_r($data2, true)); // Log the decoded data for debugging
+
         $data = json_decode((string) $request->getBody(), true);
         $name = $data['name'] ?? '';
         $lastName = $data['lastName'] ?? '';
