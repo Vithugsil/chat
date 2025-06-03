@@ -18,6 +18,7 @@ class RedisCache {
   async set(key, value, ttlSeconds = 60) {
     return await this.client.setex(key, ttlSeconds, value);
   }
+
 }
 
 module.exports = RedisCache;
