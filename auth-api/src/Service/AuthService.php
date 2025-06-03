@@ -23,7 +23,7 @@ class AuthService
         } else {
             $user = $this->userModel->getUserByEmail($email);
             if ($user) {
-                RedisCache::set($cacheKey, json_encode($user), 300);
+                RedisCache::set($cacheKey, json_encode($user), 30);
             }
         }
 
@@ -31,7 +31,7 @@ class AuthService
             return null;
         }
 
-        return JwtHelper::generateToken($user['id'], $user['password']);
+        return JwtHelper::generateToken($user['id'], $user['password'], $user['email'], $user['name'], $user['lastName']);
     }
 
     public function validateToken(int $userId, string $jwt): bool
