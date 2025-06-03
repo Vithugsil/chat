@@ -82,4 +82,10 @@ class UserModel
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Método para expor a conexão PDO para o health check
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
 }

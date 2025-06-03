@@ -5,6 +5,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use App\Model\UserModel;
 use App\Utils\RedisCache;
+use App\Utils\DatabaseUtils;
 
 class HealthController
 {
@@ -15,6 +16,7 @@ class HealthController
         $this->userModel = new UserModel();
     }
 
+    //mensagem do check
     public function check(Request $request, Response $response, array $args): Response
     {
         $status = [
@@ -25,14 +27,15 @@ class HealthController
 
         $httpStatus = 200;
 
+        // verifica o bd com o PDO do php 
         try {
-
-            $this->userModel->getAllUsers();
+            DatabaseUtils::checkConnection($this->userModel->getPdo());
         } catch (\Exception $e) {
             $status['mysql'] = 'error: ' . $e->getMessage();
             $httpStatus = 503;
         }
 
+        // verifica o redis com um ping
         try {
             $redis = RedisCache::getClient();
             $redis->ping();
