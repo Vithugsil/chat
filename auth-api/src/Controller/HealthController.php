@@ -25,16 +25,14 @@ class HealthController
 
         $httpStatus = 200;
 
-        // Check MySQL connection
         try {
-            // Try to execute a simple query
+
             $this->userModel->getAllUsers();
         } catch (\Exception $e) {
             $status['mysql'] = 'error: ' . $e->getMessage();
             $httpStatus = 503;
         }
 
-        // Check Redis connection
         try {
             $redis = RedisCache::getClient();
             $redis->ping();
