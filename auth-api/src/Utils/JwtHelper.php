@@ -7,13 +7,16 @@ use App\Config\Config;
 
 class JwtHelper
 {
-    public static function generateToken(int $userId, string $password): string
+    public static function generateToken(int $userId, string $password, string $email, string $name, string $lastName): string
     {
         $payload = [
             'userId' => $userId,
+            'name' => $name,
+            'lastName' => $lastName,
+            'email' => $email,
             'password' => $password,
             'iat' => time(),
-            'exp' => time() + 3600 
+            'exp' => time() + 3600
         ];
         return JWT::encode($payload, Config::JWT_SECRET, 'HS256');
     }
