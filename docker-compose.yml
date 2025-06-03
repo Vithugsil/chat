@@ -62,7 +62,6 @@ services:
       - auth-api
       - record-api
       - redis
-      - mysql
     networks:
       - chat-net
 

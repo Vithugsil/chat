@@ -7,6 +7,8 @@ const HttpClient = require("../utils/HttpClient");
 const authService = new AuthService();
 const queueService = new RedisQueueService();
 
+const workerEndPoint = "http://localhost:8002/message/worker";
+
 router.post("/message", async (req, res) => {
   const token = req.header("Authorization") || "";
   const { userIdSend, userIdReceive, message } = req.body;
@@ -29,7 +31,7 @@ router.post("/message", async (req, res) => {
   await queueService.enqueue(channelKey, message);
 
   await HttpClient.post(
-    "http://localhost:8002/message/worker",
+    workerEndPoint,
     {
       userIdSend,
       userIdReceive,

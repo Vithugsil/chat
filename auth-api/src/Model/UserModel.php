@@ -82,4 +82,57 @@ class UserModel
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function updateUser(int $userId, array $data): bool
+    {
+        $allowedFields = ['name', 'last_name', 'email', 'password'];
+        $updates = [];
+        $values = [];
+
+        foreach ($data as $field => $value) {
+            if (in_array($field, $allowedFields)) {
+                if ($field === 'password') {
+                    $value = password_hash($value, PASSWORD_BCRYPT);
+                }
+                $updates[] = ($field === 'last_name' ? "last_name" : $field) . " = :$field";
+                $values[":$field"] = $value;
+            }
+        }
+
+        if (empty($updates)) {
+            throw new \InvalidArgumentException("Nenhum campo válido para atualização");
+        }
+
+        // Se estiver atualizando o email, verifica se já existe
+        if (isset($data['email'])) {
+            $existingUser = $this->getUserByEmail($data['email']);
+            if ($existingUser && $existingUser['id'] !== $userId) {
+                throw new \InvalidArgumentException("Email já cadastrado: {$data['email']}");
+            }
+        }
+
+        $sql = "UPDATE user SET " . implode(", ", $updates) . " WHERE user_id = :userId";
+        $values[':userId'] = $userId;
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($values);
+    }
+
+    public function deleteUser(int $userId): bool
+    {
+        // Verifica se o usuário existe antes de tentar deletar
+        if (!$this->getUserById($userId)) {
+            throw new \InvalidArgumentException("Usuário não encontrado");
+        }
+
+        $sql = "DELETE FROM user WHERE user_id = :userId";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([':userId' => $userId]);
+    }
+
+    // Método para expor a conexão PDO para o health check
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
 }
