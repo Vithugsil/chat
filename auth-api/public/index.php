@@ -14,6 +14,8 @@ $app->get('/token', [AuthController::class, 'validate']);
 
 $app->post('/user', [UserController::class, 'create']);
 $app->get('/user', [UserController::class, 'getByEmail']);
+$app->put('/user/{id}', [UserController::class, 'update']);
+$app->delete('/user/{id}', [UserController::class, 'delete']);
 
 $app->get('/health', [HealthController::class, 'check']); 
 

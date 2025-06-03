@@ -92,4 +92,85 @@ class UserController
         $response->getBody()->write($resp);
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public function update(Request $request, Response $response, array $args)
+    {
+        $userId = intval($args['id'] ?? 0);
+        if (!$userId) {
+            $resp = json_encode(['message' => 'ID do usuário é obrigatório']);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        $data = json_decode((string) $request->getBody(), true);
+        if (empty($data)) {
+            $resp = json_encode(['message' => 'Dados para atualização são obrigatórios']);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        try {
+            $ok = $this->userModel->updateUser($userId, $data);
+            if (!$ok) {
+                $resp = json_encode(['message' => 'Erro ao atualizar usuário']);
+                $response->getBody()->write($resp);
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+
+            // Busca o usuário atualizado para retornar
+            $user = $this->userModel->getUserById($userId);
+            $resp = json_encode([
+                'message' => 'Usuário atualizado com sucesso',
+                'user' => [
+                    'id' => $user['id'],
+                    'name' => $user['name'],
+                    'lastName' => $user['lastName'],
+                    'email' => $user['email']
+                ]
+            ]);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json');
+
+        } catch (\InvalidArgumentException $e) {
+            $resp = json_encode(['message' => $e->getMessage()]);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        } catch (\Exception $e) {
+            $resp = json_encode(['message' => 'Erro interno no servidor']);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
+
+    public function delete(Request $request, Response $response, array $args)
+    {
+        $userId = intval($args['id'] ?? 0);
+        if (!$userId) {
+            $resp = json_encode(['message' => 'ID do usuário é obrigatório']);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+
+        try {
+            $ok = $this->userModel->deleteUser($userId);
+            if (!$ok) {
+                $resp = json_encode(['message' => 'Erro ao deletar usuário']);
+                $response->getBody()->write($resp);
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            }
+
+            $resp = json_encode(['message' => 'Usuário deletado com sucesso']);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json');
+
+        } catch (\InvalidArgumentException $e) {
+            $resp = json_encode(['message' => $e->getMessage()]);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        } catch (\Exception $e) {
+            $resp = json_encode(['message' => 'Erro interno no servidor']);
+            $response->getBody()->write($resp);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    }
 }
