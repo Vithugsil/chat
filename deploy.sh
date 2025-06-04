@@ -109,6 +109,16 @@ curl --request POST \
  	"message": "Vamo la no bar"       
 }'
 
+echo 
+curl --request POST \
+  --url http://localhost:8002/message/worker \
+  --header "Authorization: $token" \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"userIdSend": 1,         
+ "userIdReceive": 2       
+}'
+
 echo ""
 echo "Eviando mensagens da fila para o banco de dados..."
 echo 

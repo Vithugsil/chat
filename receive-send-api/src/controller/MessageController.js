@@ -30,17 +30,6 @@ router.post("/message", async (req, res) => {
   const channelKey = `${userIdSend}:${userIdReceive}`;
   await queueService.enqueue(channelKey, message);
 
-  await HttpClient.post(
-    workerEndPoint,
-    {
-      userIdSend,
-      userIdReceive,
-    },
-    {
-      Authorization: token,
-    }
-  );
-
   return res.json({ message: "message sended with success" });
 });
 
